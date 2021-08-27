@@ -63,8 +63,7 @@ def subscription_view(request):
     paginator.page_size = 6
     result_page = paginator.paginate_queryset(subscription_list, request)
     serializer = GetSubscribeSerializer(result_page, 
-                                        many=True, 
-                                        context={'user':request.user})
+                                        many=True)
     return paginator.get_paginated_response(serializer.data)
 
 @api_view(['GET', 'DELETE'])
@@ -75,16 +74,14 @@ def subscription(request, id):
         Subscription.objects.filter(user=user, author=user_to_subscribe).exists()
     )
     if request.method == 'GET':
-        if not subscribed:
-            data = {'user': request.user.id,
-                    'author': id}
-            serializer = SubscribeSerializer(data=data, context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                sub_serializer = GetSubscribeSerializer(user_to_subscribe)
-                return Response(sub_serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response('Вы уже подписаны', status=status.HTTP_400_BAD_REQUEST)
+        data = {'user': request.user.id,
+                'author': id}
+        serializer = SubscribeSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            sub_serializer = GetSubscribeSerializer(user_to_subscribe)
+            return Response(sub_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
         if not subscribed:
             return Response("Нет такой подписки", status=status.HTTP_400_BAD_REQUEST)
@@ -126,24 +123,21 @@ def shoppinglist(request, id):
     recipe = get_object_or_404(Recipe, id=id)
     is_in_list = Shoppinglist.objects.filter(recipe=recipe, user=request.user).exists()
     if request.method == 'GET':
-        if not is_in_list:
-            data = {
-                'user': request.user.id,
-                'recipe': id,
-            }
-            serializer = ShoppingListSerializer(data=data,
-                                             context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                recipe_serializer = RecipeToRepresentFavouriteSerializer(recipe)
-                return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response('Рецепт уже в списке покупок', status=status.HTTP_400_BAD_REQUEST)
-        
+        data = {
+            'user': request.user.id,
+            'recipe': id,
+        }
+        serializer = ShoppingListSerializer(data=data,
+                                         context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            recipe_serializer = RecipeToRepresentFavouriteSerializer(recipe)
+            return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
     if request.method == 'DELETE':
         if not is_in_list:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        obj = Favourite.objects.filter(recipe=recipe, user=request.user)
+        obj = Shoppinglist.objects.filter(recipe=recipe, user=request.user)
         obj.delete()
         return Response('Рецепт удален из списка покупок', status.HTTP_204_NO_CONTENT)
 
@@ -175,3 +169,5 @@ def download_shopping_list(request):
     response = HttpResponse(wishlist, 'Content-Type: application/pdf')
     response['Content-Disposition'] = 'attachment; filename="wishlist"'
     return response
+
+

@@ -5,7 +5,7 @@ from rest_framework.filters import SearchFilter as BaseSearchFilter
 from .models import Recipe, Tag
 
 class RecipeFilter(filters.FilterSet):
-    is_favourited = filters.BooleanFilter(method='get_is_favourited')
+    is_favorited = filters.BooleanFilter(method='get_is_favourited')
     is_in_shopping_cart = filters.BooleanFilter(method='get_is_in_shopping_cart')
     tags = filters.ModelMultipleChoiceFilter(field_name='tags__slug', 
                                              to_field_name='slug', 

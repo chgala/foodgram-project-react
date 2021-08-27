@@ -41,7 +41,6 @@ class UserSerializer(serializers.ModelSerializer):
             return False
         return (
             Subscription.objects.filter(user=request.user, author=obj).exists() 
-            or obj == request.user
         )
 
 
@@ -80,7 +79,7 @@ class PostRecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class GetRecipeSerializer(serializers.ModelSerializer):
-    is_favourited = serializers.SerializerMethodField() 
+    is_favorited = serializers.SerializerMethodField() 
     ingredients = GetRecipeIngredientSerializer(many=True, 
                                                 read_only=True, 
                                                 source='ingredients_in')
@@ -91,10 +90,10 @@ class GetRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 
-                  'is_favourited', 'is_in_shopping_cart', 
+                  'is_favorited', 'is_in_shopping_cart', 
                   'name', 'image', 'text', 'cooking_time')
 
-    def get_is_favourited(self, obj):
+    def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
@@ -168,6 +167,13 @@ class RecipeSubscribe(serializers.ModelSerializer):
 
 class SubscribeSerializer(serializers.ModelSerializer):
     
+    def validate(self, data):
+        id = data['author'].id
+        user = data['user']
+        if Subscription.objects.filter(author=id, user=user).exists():
+            raise serializers.ValidationError('You are subscribed already!')
+        return data
+
     class Meta:
         model = Subscription
         fields = '__all__'
@@ -175,7 +181,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
 class GetSubscribeSerializer(serializers.ModelSerializer):
     recipes = RecipeSubscribe(read_only=True, many=True)
     recipes_count = serializers.SerializerMethodField() 
-    is_subscribed = serializers.BooleanField(default=True)
+    is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -190,7 +196,6 @@ class GetSubscribeSerializer(serializers.ModelSerializer):
             return False
         return (
             Subscription.objects.filter(user=request.user, author=obj).exists() 
-            or obj == request.user
         )
     
     def get_recipes_count(self, obj):
@@ -218,9 +223,9 @@ class FavouriteSerializer(serializers.ModelSerializer):
 class ShoppingListSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
-        recipe_id = data['recipe'].id
+        id = data['recipe'].id
         user = data['user']
-        if Favourite.objects.filter(recipe=recipe_id, user=user).exists():
+        if Shoppinglist.objects.filter(recipe=id, user=user).exists():
             raise serializers.ValidationError('This recipe is already in your shopping list!')
         return data
     
