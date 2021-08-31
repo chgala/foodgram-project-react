@@ -5,27 +5,26 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.decorators import api_view 
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status, filters
 
-from django.http import HttpResponse
-
 from users.models import User
 from .models import (
-    Recipe, Shoppinglist, 
-    Subscription, Tag, 
-    Favourite , Ingredient
+    Recipe, Shoppinglist,
+    Subscription, Tag,
+    Favourite, Ingredient
 )
 from .serializers import (
-    FavouriteSerializer, PostRecipeSerializer, 
-    GetRecipeSerializer, IngredientSerializer, 
-    TagSerializer, RecipeToRepresentFavouriteSerializer, 
-    GetSubscribeSerializer, SubscribeSerializer, 
+    FavouriteSerializer, PostRecipeSerializer,
+    GetRecipeSerializer, IngredientSerializer,
+    TagSerializer, RecipeToRepresentFavouriteSerializer,
+    GetSubscribeSerializer, SubscribeSerializer,
     ShoppingListSerializer
 )
 from .permissions import IsAuthorOrReadOnly
 from .filters import RecipeFilter, SearchFilter
+
 
 class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
@@ -35,11 +34,13 @@ class IngredientViewSet(ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['name', ]
 
+
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_class = [AllowAny]
     pagination_class = None
+
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
@@ -56,37 +57,44 @@ class RecipeViewSet(ModelViewSet):
             return GetRecipeSerializer
         return PostRecipeSerializer
 
+
 @api_view(['GET'])
 def subscription_view(request):
     subscription_list = User.objects.filter(subscriptions__user=request.user)
     paginator = PageNumberPagination()
     paginator.page_size = 6
     result_page = paginator.paginate_queryset(subscription_list, request)
-    serializer = GetSubscribeSerializer(result_page, 
+    serializer = GetSubscribeSerializer(result_page,
                                         many=True)
     return paginator.get_paginated_response(serializer.data)
+
 
 @api_view(['GET', 'DELETE'])
 def subscription(request, id):
     user_to_subscribe = get_object_or_404(User, id=id)
     user = request.user
     subscribed = (
-        Subscription.objects.filter(user=user, author=user_to_subscribe).exists()
+        Subscription.objects.filter(user=user,
+                                    author=user_to_subscribe).exists()
     )
     if request.method == 'GET':
         data = {'user': request.user.id,
                 'author': id}
-        serializer = SubscribeSerializer(data=data, context={'request': request})
+        serializer = SubscribeSerializer(data=data,
+                                         context={'request': request})
         if serializer.is_valid():
             serializer.save()
             sub_serializer = GetSubscribeSerializer(user_to_subscribe)
-            return Response(sub_serializer.data, status=status.HTTP_201_CREATED)
+            return Response(sub_serializer.data,
+                            status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
         if not subscribed:
-            return Response("Нет такой подписки", status=status.HTTP_400_BAD_REQUEST)
+            return Response("Нет такой подписки", 
+                            status=status.HTTP_400_BAD_REQUEST)
         obj = (
-            Subscription.objects.filter(user=request.user, author=user_to_subscribe)
+            Subscription.objects.filter(user=request.user,
+                                        author=user_to_subscribe)
         )
         obj.delete()
         return Response('Автор удален из подписок', status.HTTP_204_NO_CONTENT)
@@ -95,79 +103,56 @@ def subscription(request, id):
 @api_view(['GET', 'DELETE'])
 def favourite(request, recipe_id):
     recipe = get_object_or_404(Recipe, id=recipe_id)
-    favourited = Favourite.objects.filter(recipe=recipe, user=request.user).exists()
+    favourited = Favourite.objects.filter(recipe=recipe,
+                                          user=request.user).exists()
     if request.method == 'GET':
-        if not favourited:
-            data = {
-                'user': request.user.id,
-                'recipe': recipe_id,
-            }
-            serializer = FavouriteSerializer(data=data,
-                                             context={'request': request})
-            if serializer.is_valid():
-                serializer.save()
-                recipe_serializer = RecipeToRepresentFavouriteSerializer(recipe)
-                return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response('Вы уже подписаны', status=status.HTTP_400_BAD_REQUEST)
-        
+        data = {
+            'user': request.user.id,
+            'recipe': recipe_id,
+        }
+        serializer = FavouriteSerializer(data=data,
+                                         context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            recipe_serializer = (
+                RecipeToRepresentFavouriteSerializer(recipe)
+            )
+            return Response(recipe_serializer.data,
+                            status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
+
     if request.method == 'DELETE':
         if not favourited:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         obj = Favourite.objects.filter(recipe=recipe, user=request.user)
         obj.delete()
-        return Response('Рецепт удален из избранного', status.HTTP_204_NO_CONTENT)
+        return Response('Рецепт удален из избранного',
+                        status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['GET', 'DELETE'])
 def shoppinglist(request, id):
     recipe = get_object_or_404(Recipe, id=id)
-    is_in_list = Shoppinglist.objects.filter(recipe=recipe, user=request.user).exists()
+    is_in_list = Shoppinglist.objects.filter(recipe=recipe,
+                                             user=request.user).exists()
     if request.method == 'GET':
         data = {
             'user': request.user.id,
             'recipe': id,
         }
         serializer = ShoppingListSerializer(data=data,
-                                         context={'request': request})
+                                            context={'request': request})
         if serializer.is_valid():
             serializer.save()
             recipe_serializer = RecipeToRepresentFavouriteSerializer(recipe)
-            return Response(recipe_serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
+            return Response(recipe_serializer.data,
+                            status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'DELETE':
         if not is_in_list:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         obj = Shoppinglist.objects.filter(recipe=recipe, user=request.user)
         obj.delete()
-        return Response('Рецепт удален из списка покупок', status.HTTP_204_NO_CONTENT)
-
-@api_view(['GET'])
-def download_shopping_list(request):
-    recipe_list = request.user.current_user.all()
-    buy_list = {}
-    for list in recipe_list:
-        ingredients = list.recipe.ingredients_in.all()
-        for ingredient in ingredients:
-            name = ingredient.ingredient.name
-            amount = ingredient.amount
-            measurement_unit = ingredient.ingredient.measurement_unit 
-            if name in buy_list.keys():
-                buy_list[name]['amount'] += amount
-            else:
-                buy_list[name] = {}
-                buy_list[name]['amount'] = amount
-                buy_list[name]['measurement_unit'] = measurement_unit
-    wishlist = ''
-    for ingredient in buy_list:
-        wishlist += f'{ingredient}'
-        wishlist += f' ({buy_list[ingredient]["measurement_unit"]})   -   ' 
-        wishlist += f'{buy_list[ingredient]["amount"]}' 
-        wishlist += ' \n'
-    wishlist += ' \n'
-    wishlist += ' \n'
-    wishlist += 'Yours, Foodgram'
-    response = HttpResponse(wishlist, 'Content-Type: application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="wishlist"'
-    return response
-
-
+        return Response('Рецепт удален из списка покупок',
+                        status.HTTP_204_NO_CONTENT)
