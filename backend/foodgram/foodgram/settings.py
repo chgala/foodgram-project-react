@@ -1,6 +1,7 @@
 from pathlib import Path
-from .secret_settings import *
 import os
+
+from .secret_settings import *
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent

@@ -1,9 +1,7 @@
-# from django.core import validators
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
 
 
 from .models import (
@@ -238,7 +236,9 @@ class FavouriteSerializer(serializers.ModelSerializer):
         recipe_id = data['recipe'].id
         user = data['user']
         if Favourite.objects.filter(recipe=recipe_id, user=user).exists():
-            raise serializers.ValidationError('You have already subscribed!')
+            raise serializers.ValidationError(
+                'Вы уже подписаны на этого пользователя!'
+                )
         return data
 
     class Meta:
@@ -253,7 +253,7 @@ class ShoppingListSerializer(serializers.ModelSerializer):
         user = data['user']
         if Shoppinglist.objects.filter(recipe=id, user=user).exists():
             raise serializers.ValidationError(
-                'This recipe is already in your shopping list!'
+                'Рецепт уже в вашем списке покупок!'
             )
         return data
 
