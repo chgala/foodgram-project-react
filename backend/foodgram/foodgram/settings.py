@@ -1,14 +1,20 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
-from .secret_settings import *
 
+
+load_dotenv()
+
+#from .secret_settings import *
+SECRET_KEY = 'django-insecure-qhe-lag+=x_i(*w%oc+$ck=^^vvssbp^eoxjgx0ei5x1yqt_-i'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = ['178.154.199.106', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'api',
@@ -57,10 +63,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 
+#DATABASES = {
+#    'default': env.db(),
+#}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.environ.get('DB_NAME', 5432),
+        'USER': os.environ.get('POSTGRES_USER', 5432),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 5432),
+        'HOST': os.environ.get('DB_HOST', 5432),
+        'PORT': os.environ.get('DB_PORT', 5432)
     }
 }
 
@@ -89,8 +103,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -134,8 +146,8 @@ DJOSER = {
     },
 }
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = '/backend_static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'backend_static')
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/backend_media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "backend_media")

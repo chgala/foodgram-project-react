@@ -7,6 +7,6 @@ COPY . ./
 RUN npm run build
 CMD cp -r build result_build
 
-#FROM nginx:stable-alpine
-#COPY --from=build /app/frontend/result_build /usr/share/nginx/html
-#CMD ["nginx", "-g", "daemon off;"]
+FROM nginx:stable-alpine # добавила сама))
+COPY --from=build /app/frontend/build /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
