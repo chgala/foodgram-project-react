@@ -14,22 +14,20 @@
 - git clone https://github.com/smolfil94/foodgram-project-react.git
 
 ## Заполнение .env:
-Чтобы добавить переменную в .env необходимо открыть файл .env в корневой директории проекта и поместить туда переменную в формате имя_переменной=значение. Пример .env файла:
-< 
-- DB_ENGINE=my_db
-- DB_NAME=postgres
-- POSTGRES_USER=postgres
-- POSTGRES_PASSWORD=postgres
-- DB_HOST=db
-- DB_PORT=5432
->
+Чтобы добавить переменную в .env необходимо открыть файл .env в корневой директории проекта и поместить туда переменную в формате имя_переменной=значение. Пример .env файла: 
+> - DB_ENGINE=my_db
+> - DB_NAME=postgres
+> - POSTGRES_USER=postgres
+> - POSTGRES_PASSWORD=postgres
+> - DB_HOST=db
+> - DB_PORT=5432
 
 ## Запуск проекта:
 + Установите Докер
 + Перейдите в папку в проекте infra/
 + Выполните команду:
-< - docker-compose up -d --build >
+> - docker-compose up -d --build
 
 ## Первоначальная настройка Django:
-< - sudo docker-compose exec backend python manage.py migrate --noinput
-- sudo docker-compose exec backend python manage.py collectstatic --no-input >
+> - sudo docker-compose exec backend python manage.py migrate --noinput
+> - sudo docker-compose exec backend python manage.py collectstatic --no-input 
