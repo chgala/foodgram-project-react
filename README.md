@@ -11,7 +11,7 @@
 + nginx
 
 ## Команда клонирования репозитория:
-- git clone https://github.com/smolfil94/foodgram-project-react.git
+- git clone https://github.com/chgala/foodgram-project-react.git
 
 ## Заполнение .env:
 Чтобы добавить переменную в .env необходимо открыть файл .env в корневой директории проекта и поместить туда переменную в формате имя_переменной=значение. Пример .env файла: 
@@ -29,5 +29,9 @@
 > - docker-compose up -d --build
 
 ## Первоначальная настройка Django:
+> - sudo docker-compose exec backend python manage.py makemigrations
 > - sudo docker-compose exec backend python manage.py migrate --noinput
 > - sudo docker-compose exec backend python manage.py collectstatic --no-input 
+## Создание суперюзера
+> - sudo docker-compose exec backend python manage.py createsuperuser
+
