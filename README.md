@@ -15,7 +15,7 @@
 
 ## Заполнение .env:
 Чтобы добавить переменную в .env необходимо открыть файл .env в корневой директории проекта и поместить туда переменную в формате имя_переменной=значение. Пример .env файла: 
-> - DB_ENGINE=my_db
+> - DB_ENGINE=db
 > - DB_NAME=postgres
 > - POSTGRES_USER=postgres
 > - POSTGRES_PASSWORD=postgres
