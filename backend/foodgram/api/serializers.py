@@ -131,6 +131,11 @@ class PostRecipeSerializer(serializers.ModelSerializer):
         recipe.tags.set(tags)
 
         for ingredient in ingredients:
+            if ingredient['amount'] <= 0:
+                raise serializers.ValidationError(
+                    'Укажите корректное значение '
+                    'количества ингредиента.'
+                )
             current_ingredient = (
                 Ingredient.objects.get(pk=ingredient['ingredient']['id'].id)
             )
@@ -147,6 +152,11 @@ class PostRecipeSerializer(serializers.ModelSerializer):
             ingredients = validated_data.pop('ingredients_in')
             instance.ingredients.clear()
             for ingredient in ingredients:
+                if ingredient['amount'] <= 0:
+                    raise serializers.ValidationError(
+                        'Укажите корректное значение '
+                        'количества ингредиента.'
+                    )
                 current_ingredient = (
                     get_object_or_404(Ingredient,
                                       pk=ingredient['ingredient']['id'].id)

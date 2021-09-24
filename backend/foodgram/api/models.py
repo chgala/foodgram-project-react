@@ -63,8 +63,8 @@ class Recipe(models.Model):
                               blank=False,
                               verbose_name='Изображение')
     cooking_time = (
-        models.PositiveIntegerField(validators=[MinValueValidator(0)],
-                                    verbose_name='Время приготовления')
+        models.PositiveIntegerField(verbose_name='Время приготовления',
+                                    validators=[MinValueValidator(1)])
     )
     text = models.TextField(max_length=500)
 
@@ -79,7 +79,7 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(Ingredient,
                                    related_name='ingredients_in',
                                    on_delete=CASCADE)
-    amount = models.FloatField(validators=[MinValueValidator(0)])
+    amount = models.FloatField(verbose_name='Количество')
 
 
 class Favourite(models.Model):
@@ -91,7 +91,7 @@ class Favourite(models.Model):
                                related_name='in_favourite')
 
     class Meta:
-        constraints = (models.UniqueConstraint(fields=['user', 'recipe'], 
+        constraints = (models.UniqueConstraint(fields=['user', 'recipe'],
                                                name='following_unique'),)
 
 
