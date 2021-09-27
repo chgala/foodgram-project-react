@@ -60,12 +60,13 @@ class RecipeViewSet(ModelViewSet):
 
 @api_view(['GET'])
 def subscription_view(request):
-    subscription_list = User.objects.filter(subscriptions__user=request.user)
+    subscription_list = User.objects.filter(subcriptors__user=request.user)
     paginator = PageNumberPagination()
     paginator.page_size = 6
     result_page = paginator.paginate_queryset(subscription_list, request)
     serializer = GetSubscribeSerializer(result_page,
-                                        many=True)
+                                        many=True,
+                                        context={'request': request})
     return paginator.get_paginated_response(serializer.data)
 
 
